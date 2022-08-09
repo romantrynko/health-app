@@ -10,17 +10,32 @@ import TimerHandler from '../../services/TimerHandler/TimerHandler';
 export default function Timer({ data }: { data: any }) {
 
     // const [isPaused, setIsPaused] = useState(false);
-    const [secondsLeft, setSecondsLeft] = useState(0);
-    const secondsLeftRef = useRef(secondsLeft);
+    const [secondsLeft, setSecondsLeft] = useState(data.exercises[0].duration);
+    const [timerPosition, setTimerPosition] = useState(0);
 
-    const [timerPosition, setTimerPosition] = useState(0)
+    const secondsLeftRef = useRef(secondsLeft);
+    const timerPositionRef = useRef(timerPosition);
+
+    const switchTimer = () => {
+        timerPositionRef.current++
+        setTimerPosition(timerPositionRef.current)
+        let timing = data.exercises[timerPosition].duration;
+        setSecondsLeft(timing);
+    }
 
     const initTimer = useCallback(() => {
         setSecondsLeft(data.exercises[timerPosition].duration)
     }, [])
 
     const tick = useCallback(() => {
+        console.log(secondsLeftRef.current);
+
         secondsLeftRef.current--;
+
+        if (secondsLeftRef.current === 0) {
+            switchTimer();
+            return
+        }
         setSecondsLeft(secondsLeftRef.current)
     }, [])
 
@@ -28,11 +43,6 @@ export default function Timer({ data }: { data: any }) {
         initTimer();
 
         const interval = setInterval(() => {
-            if (secondsLeftRef.current === 0) {
-                let timing = data.exercises[timerPosition].duration;
-                setTimerPosition(timerPosition + 1)
-                setSecondsLeft(timing)
-            }
             tick()
         }, 1000);
 
@@ -43,7 +53,6 @@ export default function Timer({ data }: { data: any }) {
         <Box width={200}>
             <CircularProgressbar value={secondsLeft} text={`${secondsLeft} s`} />
             <PlayButton />
-
         </Box>
     )
 }
